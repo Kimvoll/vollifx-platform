@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: #05070d;
+  color: #f8fafc;
+}
+
+.light body {
+  background: #f6f8fb;
+  color: #0b1220;
+}
+
+::selection {
+  background: rgba(32, 226, 156, 0.28);
+  color: #ffffff;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.glass {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
+  backdrop-filter: blur(18px);
+}
+
+.light .glass {
+  border-color: rgba(9, 17, 32, 0.1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.64));
+}
+
+.section-pad {
+  padding: 5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .section-pad {
+    padding: 7rem 1.5rem;
+  }
+}
+
+.chart-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.11) 1px, transparent 1px);
+  background-size: 56px 42px;
+}
+
+.clip-chart {
+  clip-path: polygon(0 64%, 8% 58%, 15% 62%, 23% 38%, 30% 48%, 38% 28%, 45% 35%, 52% 22%, 61% 31%, 68% 18%, 76% 24%, 84% 14%, 92% 20%, 100% 10%, 100% 100%, 0 100%);
+}
