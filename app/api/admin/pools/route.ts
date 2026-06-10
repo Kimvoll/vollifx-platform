@@ -16,7 +16,7 @@ export async function PUT(request: Request) {
   };
   const supabase = getSupabaseAdmin();
   const updates = {
-    minimum_deposit: Number(String(body.minimum || "500").replace(/[^0-9.]/g, "")) || 500,
+    minimum_deposit: Number(String(body.minimum || "750").replace(/[^0-9.]/g, "")) || 750,
     return_label: body.returnSummary || "5x weekly",
     return_summary: body.returnSummary || "5x weekly",
     status: body.status || "Open",

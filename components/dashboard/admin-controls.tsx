@@ -33,7 +33,7 @@ export function AdminControls() {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedPoolId, setSelectedPoolId] = useState(fallbackPools[0]?.id || "");
   const [userDraft, setUserDraft] = useState({ balance: "$0.00", availableBalance: "$0.00", roi: "0.0%", kyc: "Pending", status: "Active" });
-  const [poolDraft, setPoolDraft] = useState({ minimum: "$500", returnSummary: "5x weekly", status: "Open", risk: "Medium" });
+  const [poolDraft, setPoolDraft] = useState({ minimum: "$750", returnSummary: "5x weekly", status: "Open", risk: "Medium" });
 
   useEffect(() => {
     async function loadAdminData() {
@@ -60,7 +60,7 @@ export function AdminControls() {
         setPoolList(poolsData.pools);
         setSelectedPoolId(poolsData.pools[0].id);
         setPoolDraft({
-          minimum: poolsData.pools[0].minimum || "$500",
+          minimum: poolsData.pools[0].minimum || "$750",
           returnSummary: poolsData.pools[0].monthlyRoi || "5x weekly",
           status: poolsData.pools[0].status || "Open",
           risk: poolsData.pools[0].risk || "Medium"

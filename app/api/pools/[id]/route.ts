@@ -32,7 +32,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   if (!body.paymentId) {
     return NextResponse.json({ message: "Payment is required before joining this pool." }, { status: 402 });
   }
-  const amount = Number(String(body.amount || pool.minimum || "500").replace(/[^0-9.]/g, "")) || 500;
+  const amount = Number(String(body.amount || pool.minimum || "750").replace(/[^0-9.]/g, "")) || 750;
   const { data: allocation, error } = await supabase.from("allocations").insert({
     user_id: user.id,
     pool_id: pool.id,

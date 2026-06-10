@@ -52,7 +52,7 @@ export const compliance = [
 export const faqs = [
   ["What is VOLLIFX?", "VOLLIFX is a premium forex and CFD trading platform focused on capital allocation, managed trading pools, real-time analytics, and transparent performance management."],
   ["How do I start trading?", "Create an account, complete the onboarding checks, deposit capital, and select the trading pool or account workflow that matches your risk profile."],
-  ["What is the minimum deposit and withdrawal?", "The minimum pool deposit is $500. Withdrawal availability depends on account balance, verification status, pool rules, and compliance review."],
+  ["What is the minimum deposit and withdrawal?", "The minimum pool investment is $750. Withdrawal availability depends on account balance, verification status, pool rules, and compliance review."],
   ["How does the Active Trading Pool work?", "The pool aggregates allocated capital under a defined strategy, tracks performance in real time, and applies risk rules before traders choose to withdraw or compound."],
   ["Is my personal information secure?", "VOLLIFX uses protected authentication, role-based access, secure account records, and verification controls for investor data."],
   ["Can I withdraw my funds at any time?", "Withdrawal availability depends on pool rules, settlement windows, and compliance checks. The UI is ready for withdrawal state and policy messaging."],

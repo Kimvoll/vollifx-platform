@@ -18,7 +18,7 @@ export function mapPool(row: any) {
     drawdown: percent(row.max_drawdown),
     risk: row.risk,
     investors: row.investors,
-    minimum: `$${Number(row.minimum_deposit || 500).toLocaleString("en-US")}`,
+    minimum: `$${Number(row.minimum_deposit || 750).toLocaleString("en-US")}`,
     status: row.status,
     asset: row.asset,
     popular: true,

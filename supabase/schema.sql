@@ -24,7 +24,7 @@ create table if not exists public.pools (
   max_drawdown numeric not null default 0,
   risk text not null default 'Medium',
   investors integer not null default 0,
-  minimum_deposit numeric not null default 500,
+  minimum_deposit numeric not null default 750,
   status text not null default 'Open',
   asset text not null,
   return_summary text,
@@ -32,11 +32,14 @@ create table if not exists public.pools (
   updated_at timestamptz not null default now()
 );
 
-insert into public.pools (id, name, manager, return_label, asset, return_summary)
+insert into public.pools (id, name, manager, return_label, asset, return_summary, investors, minimum_deposit)
 values
-  ('gold-pool', 'Gold Pool', 'Volli', '5x weekly', 'Gold', 'Profit return: 5 times a week the capital'),
-  ('usoil-nas100-pool', 'USOIL & NAS100 Pool', 'Volli', '5-10x weekly', 'USOIL, NAS100', 'Profit return: 5-10 times a week the capital')
+  ('gold-pool', 'Gold Pool', 'Volli', '5x weekly', 'Gold', 'Profit return: 5 times a week the capital', 11, 750),
+  ('usoil-nas100-pool', 'USOIL & NAS100 Pool', 'Volli', '5-10x weekly', 'USOIL, NAS100', 'Profit return: 5-10 times a week the capital', 6, 750)
 on conflict (id) do nothing;
+
+update public.pools set investors = 11, minimum_deposit = 750 where id = 'gold-pool';
+update public.pools set investors = 6, minimum_deposit = 750 where id = 'usoil-nas100-pool';
 
 create table if not exists public.transactions (
   id uuid primary key default gen_random_uuid(),

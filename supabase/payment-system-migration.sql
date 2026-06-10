@@ -37,3 +37,8 @@ create policy "own_notifications_or_admin" on public.notifications
 for select using (user_id = auth.uid() or public.is_admin());
 
 notify pgrst, 'reload schema';
+
+update public.pools set investors = 11, minimum_deposit = 750 where id = 'gold-pool';
+update public.pools set investors = 6, minimum_deposit = 750 where id = 'usoil-nas100-pool';
+
+notify pgrst, 'reload schema';

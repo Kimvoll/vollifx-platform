@@ -39,7 +39,7 @@ export default function HomePage() {
               {[
                 ["5x", "Gold weekly"],
                 ["5-10x", "USOIL/NAS100"],
-                ["$500", "Minimum"]
+                ["$750", "Minimum"]
               ].map(([value, label]) => (
                 <div className="rounded-lg border border-white/10 bg-white/5 p-4 light:border-slate-200 light:bg-white" key={label}>
                   <p className="text-2xl font-black text-emeraldx">{value}</p>
@@ -127,7 +127,7 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  {[result, "$500 minimum", manager].map((item) => (
+                    {[result, "$750 minimum", manager].map((item) => (
                     <p className="rounded-lg bg-white/6 p-4 text-sm font-bold text-slate-200 light:bg-slate-100 light:text-slate-700" key={item}>{item}</p>
                   ))}
                 </div>

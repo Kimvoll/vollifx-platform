@@ -15,7 +15,7 @@ type PaymentState = {
   };
 };
 
-export function JoinPoolButton({ poolId, className, minimum = "$500" }: { poolId: string; className: string; minimum?: string }) {
+export function JoinPoolButton({ poolId, className, minimum = "$750" }: { poolId: string; className: string; minimum?: string }) {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ export function JoinPoolButton({ poolId, className, minimum = "$500" }: { poolId
     countryCode: "KE"
   });
 
-  const amount = Number(minimum.replace(/[^0-9.]/g, "")) || 500;
+  const amount = Number(minimum.replace(/[^0-9.]/g, "")) || 750;
 
   async function startPayment() {
     setLoading(true);
