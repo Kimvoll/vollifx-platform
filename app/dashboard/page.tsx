@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { Banknote, CircleDollarSign, Plus, Repeat2 } from "lucide-react";
+import { AccountStatGrid } from "@/components/dashboard/account-stat-grid";
 import { ActivityTable } from "@/components/dashboard/activity-table";
 import { ChartCard } from "@/components/dashboard/chart-card";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { dashboardStats } from "@/lib/dashboard-data";
 
 const actions = [
   { href: "/dashboard/deposit", label: "Deposit Funds", icon: Plus },
@@ -19,9 +18,7 @@ export default function DashboardPage() {
         <p className="text-xs font-bold uppercase tracking-[0.24em] text-goldx">Investor Dashboard</p>
         <h1 className="mt-2 text-3xl font-black text-white light:text-slate-950">Portfolio Command Center</h1>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {dashboardStats.map((stat) => <StatCard key={stat.label} {...stat} />)}
-      </div>
+      <AccountStatGrid />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map((action) => {
           const Icon = action.icon;

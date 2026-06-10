@@ -4,9 +4,23 @@ import { ActivityTable } from "@/components/dashboard/activity-table";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { JoinPoolButton } from "@/components/dashboard/join-pool-button";
 import { openTrades, closedTrades, pools } from "@/lib/dashboard-data";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { mapPool } from "@/lib/supabase/mappers";
 
-export default function PoolDetailsPage({ params }: { params: { id: string } }) {
-  const pool = pools.find((item) => item.id === params.id);
+export const dynamic = "force-dynamic";
+
+async function getPool(id: string) {
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase.from("pools").select("*").eq("id", id).maybeSingle();
+    if (data) return mapPool(data);
+  } catch {
+  }
+  return pools.find((item) => item.id === id);
+}
+
+export default async function PoolDetailsPage({ params }: { params: { id: string } }) {
+  const pool = await getPool(params.id);
   if (!pool) notFound();
 
   return (

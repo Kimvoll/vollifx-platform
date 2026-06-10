@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PoolCard } from "@/components/dashboard/pool-card";
 import { pools } from "@/lib/dashboard-data";
 
@@ -8,7 +8,23 @@ const filters = ["All", "Gold", "USOIL, NAS100", "Medium", "Popular"];
 
 export default function PoolsPage() {
   const [filter, setFilter] = useState("All");
-  const visible = useMemo(() => pools.filter((pool) => filter === "All" || pool.risk === filter || pool.asset === filter || (filter === "Popular" && pool.popular)), [filter]);
+  const [poolList, setPoolList] = useState(pools);
+  const visible = useMemo(() => poolList.filter((pool) => filter === "All" || pool.risk === filter || pool.asset === filter || (filter === "Popular" && pool.popular)), [filter, poolList]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadPools() {
+      const response = await fetch("/api/pools");
+      const data = await response.json().catch(() => ({}));
+      if (active && response.ok && data.pools?.length) setPoolList(data.pools);
+    }
+    loadPools();
+    const timer = window.setInterval(loadPools, 12000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   return (
     <div className="grid gap-6">

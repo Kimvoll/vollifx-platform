@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Activity, Save, ShieldCheck, SlidersHorizontal, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { adminRules, adminStats, pools as fallbackPools } from "@/lib/dashboard-data";
@@ -24,54 +25,45 @@ type AdminPool = {
   monthlyRoi: string;
   status: string;
   risk: string;
+  investors: number;
 };
 
 export function AdminControls() {
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState("");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [poolList, setPoolList] = useState<AdminPool[]>(fallbackPools);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedPoolId, setSelectedPoolId] = useState(fallbackPools[0]?.id || "");
   const [userDraft, setUserDraft] = useState({ balance: "$0.00", availableBalance: "$0.00", roi: "0.0%", kyc: "Pending", status: "Active" });
-  const [poolDraft, setPoolDraft] = useState({ minimum: "$750", returnSummary: "5x weekly", status: "Open", risk: "Medium" });
+  const [poolDraft, setPoolDraft] = useState({ minimum: "$750", returnSummary: "5x weekly", status: "Open", risk: "Medium", investors: "0" });
 
   useEffect(() => {
-    async function loadAdminData() {
-      const [usersResponse, poolsResponse] = await Promise.all([
-        fetch("/api/admin/users", { headers: authHeaders() }),
-        fetch("/api/pools", { headers: authHeaders() })
-      ]);
-      const usersData = await usersResponse.json().catch(() => ({}));
-      const poolsData = await poolsResponse.json().catch(() => ({}));
-      if (usersResponse.ok) {
-        setUsers(usersData.users || []);
-        if (usersData.users?.[0]) {
-          setSelectedUserId(usersData.users[0].id);
-          setUserDraft({
-            balance: usersData.users[0].balance || "$0.00",
-            availableBalance: usersData.users[0].availableBalance || usersData.users[0].balance || "$0.00",
-            roi: usersData.users[0].roi || "0.0%",
-            kyc: usersData.users[0].kyc || "Pending",
-            status: usersData.users[0].status || "Active"
-          });
-        }
-      }
-      if (poolsResponse.ok && poolsData.pools?.length) {
-        setPoolList(poolsData.pools);
-        setSelectedPoolId(poolsData.pools[0].id);
-        setPoolDraft({
-          minimum: poolsData.pools[0].minimum || "$750",
-          returnSummary: poolsData.pools[0].monthlyRoi || "5x weekly",
-          status: poolsData.pools[0].status || "Open",
-          risk: poolsData.pools[0].risk || "Medium"
-        });
-      }
-    }
     loadAdminData();
   }, []);
 
-  function selectUser(userId: string) {
-    const user = users.find((item) => item.id === userId);
+  async function loadAdminData() {
+    const [usersResponse, poolsResponse] = await Promise.all([
+      fetch("/api/admin/users", { headers: authHeaders() }),
+      fetch("/api/pools", { headers: authHeaders() })
+    ]);
+    const usersData = await usersResponse.json().catch(() => ({}));
+    const poolsData = await poolsResponse.json().catch(() => ({}));
+
+    if (usersResponse.ok) {
+      const nextUsers = usersData.users || [];
+      setUsers(nextUsers);
+      if (nextUsers[0]) selectUserFromList(nextUsers[0].id, nextUsers);
+    }
+
+    if (poolsResponse.ok && poolsData.pools?.length) {
+      setPoolList(poolsData.pools);
+      selectPoolFromList(poolsData.pools[0].id, poolsData.pools);
+    }
+  }
+
+  function selectUserFromList(userId: string, source = users) {
+    const user = source.find((item) => item.id === userId);
     setSelectedUserId(userId);
     if (user) {
       setUserDraft({
@@ -84,15 +76,16 @@ export function AdminControls() {
     }
   }
 
-  function selectPool(poolId: string) {
-    const pool = poolList.find((item) => item.id === poolId);
+  function selectPoolFromList(poolId: string, source = poolList) {
+    const pool = source.find((item) => item.id === poolId);
     setSelectedPoolId(poolId);
     if (pool) {
       setPoolDraft({
-        minimum: pool.minimum,
-        returnSummary: pool.monthlyRoi,
-        status: pool.status,
-        risk: pool.risk
+        minimum: pool.minimum || "$750",
+        returnSummary: pool.monthlyRoi || "5x weekly",
+        status: pool.status || "Open",
+        risk: pool.risk || "Medium",
+        investors: String(pool.investors || 0)
       });
     }
   }
@@ -102,26 +95,48 @@ export function AdminControls() {
       setMessage("Select a user before saving account controls.");
       return;
     }
+    setSaving("user");
     const response = await fetch("/api/admin/users", {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ userId: selectedUserId, ...userDraft })
     });
-    const data = await response.json();
-    setMessage(data.message);
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setUsers((current) => current.map((user) => user.id === selectedUserId ? { ...user, ...userDraft } : user));
+    }
+    setMessage(data.message || (response.ok ? "User account controls saved." : "User account controls could not be saved."));
+    setSaving("");
   }
 
   async function savePoolOverride() {
+    if (!selectedPoolId) {
+      setMessage("Select a pool before saving pool controls.");
+      return;
+    }
+    setSaving("pool");
     const response = await fetch("/api/admin/pools", {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ poolId: selectedPoolId, ...poolDraft })
     });
-    const data = await response.json();
-    setMessage(data.message);
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setPoolList((current) => current.map((pool) => pool.id === selectedPoolId ? {
+        ...pool,
+        minimum: poolDraft.minimum,
+        monthlyRoi: poolDraft.returnSummary,
+        status: poolDraft.status,
+        risk: poolDraft.risk,
+        investors: Number(poolDraft.investors || 0)
+      } : pool));
+    }
+    setMessage(data.message || (response.ok ? "Pool controls saved." : "Pool controls could not be saved."));
+    setSaving("");
   }
 
   async function saveRules() {
+    setSaving("rules");
     const response = await fetch("/api/admin/rules", {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -137,11 +152,13 @@ export function AdminControls() {
         }
       })
     });
-    const data = await response.json();
-    setMessage(data.message);
+    const data = await response.json().catch(() => ({}));
+    setMessage(data.message || "Dashboard rules saved.");
+    setSaving("");
   }
 
   async function saveOperations() {
+    setSaving("operations");
     const response = await fetch("/api/admin/operations", {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -154,14 +171,15 @@ export function AdminControls() {
         kycRequired: true
       })
     });
-    const data = await response.json();
-    setMessage(data.message);
+    const data = await response.json().catch(() => ({}));
+    setMessage(data.message || "Platform operations saved.");
+    setSaving("");
   }
 
   return (
     <div className="grid gap-6">
       {message ? <div className="rounded-lg border border-emeraldx/30 bg-emeraldx/10 p-4 text-sm font-bold text-emeraldx">{message}</div> : null}
-      <AdminCard icon={Activity} title="Platform Operations" button="Save Operations" onSave={saveOperations}>
+      <AdminCard disabled={saving === "operations"} icon={Activity} title="Platform Operations" button={saving === "operations" ? "Saving..." : "Save Operations"} onSave={saveOperations}>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {adminStats.map(([label, value]) => (
             <div className="rounded-lg bg-white/6 p-4 text-sm font-bold light:bg-slate-100" key={label}>
@@ -170,21 +188,14 @@ export function AdminControls() {
             </div>
           ))}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {["Deposits Enabled", "Withdrawals Enabled", "Pool Joining Enabled", "KYC Required"].map((item) => (
-            <label className="flex items-center justify-between rounded-lg bg-white/6 p-4 text-sm font-bold light:bg-slate-100" key={item}>
-              {item}
-              <input className="h-5 w-5 accent-emeraldx" defaultChecked type="checkbox" />
-            </label>
-          ))}
-        </div>
       </AdminCard>
+
       <div className="grid gap-6 xl:grid-cols-3">
-        <AdminCard icon={UserCog} title="User Account Controls" button="Save User Controls" onSave={saveUserOverride}>
+        <AdminCard disabled={saving === "user"} icon={UserCog} title="User Account Controls" button={saving === "user" ? "Saving..." : "Save User Controls"} onSave={saveUserOverride}>
           <div className="grid gap-3">
             <label className="grid gap-2 text-sm font-bold">
               Investor
-              <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => selectUser(event.target.value)} value={selectedUserId}>
+              <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => selectUserFromList(event.target.value)} value={selectedUserId}>
                 {users.length === 0 ? <option value="">No investors available</option> : users.map((user) => (
                   <option key={user.id} value={user.id}>{user.name} - {user.email}</option>
                 ))}
@@ -199,16 +210,28 @@ export function AdminControls() {
               <option>Review</option>
               <option>Rejected</option>
             </select>
+            <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setUserDraft((value) => ({ ...value, status: event.target.value }))} value={userDraft.status}>
+              <option>Active</option>
+              <option>Review</option>
+              <option>Suspended</option>
+              <option>Closed</option>
+            </select>
           </div>
         </AdminCard>
 
-        <AdminCard icon={SlidersHorizontal} title="Pool Controls" button="Save Pool Controls" onSave={savePoolOverride}>
+        <AdminCard disabled={saving === "pool"} icon={SlidersHorizontal} title="Pool Controls" button={saving === "pool" ? "Saving..." : "Save Pool Controls"} onSave={savePoolOverride}>
           <div className="grid gap-3">
-            <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => selectPool(event.target.value)} value={selectedPoolId}>
+            <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => selectPoolFromList(event.target.value)} value={selectedPoolId}>
               {poolList.map((pool) => <option key={pool.id} value={pool.id}>{pool.name}</option>)}
             </select>
-            <input className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, minimum: event.target.value }))} value={poolDraft.minimum} />
-            <input className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, returnSummary: event.target.value }))} value={poolDraft.returnSummary} />
+            <input className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, minimum: event.target.value }))} placeholder="Minimum investment" value={poolDraft.minimum} />
+            <input className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, returnSummary: event.target.value }))} placeholder="Return label" value={poolDraft.returnSummary} />
+            <input className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, investors: event.target.value }))} placeholder="Investors" value={poolDraft.investors} />
+            <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, risk: event.target.value }))} value={poolDraft.risk}>
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
             <select className="rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm outline-none light:border-slate-200 light:bg-white" onChange={(event) => setPoolDraft((value) => ({ ...value, status: event.target.value }))} value={poolDraft.status}>
               <option>Open</option>
               <option>Limited</option>
@@ -217,7 +240,7 @@ export function AdminControls() {
           </div>
         </AdminCard>
 
-        <AdminCard icon={ShieldCheck} title="Dashboard Rules" button="Save Rules" onSave={saveRules}>
+        <AdminCard disabled={saving === "rules"} icon={ShieldCheck} title="Dashboard Rules" button={saving === "rules" ? "Saving..." : "Save Rules"} onSave={saveRules}>
           <div className="grid gap-2">
             {adminRules.map((rule) => (
               <label className="flex items-start gap-3 rounded-lg bg-white/6 p-3 text-sm light:bg-slate-100" key={rule}>
@@ -232,7 +255,7 @@ export function AdminControls() {
   );
 }
 
-function AdminCard({ icon: Icon, title, button, children, onSave }: { icon: any; title: string; button: string; children: React.ReactNode; onSave: () => void }) {
+function AdminCard({ icon: Icon, title, button, children, onSave, disabled = false }: { icon: any; title: string; button: string; children: React.ReactNode; onSave: () => void; disabled?: boolean }) {
   return (
     <div className="glass rounded-lg p-5">
       <div className="mb-5 flex items-center gap-3">
@@ -242,7 +265,7 @@ function AdminCard({ icon: Icon, title, button, children, onSave }: { icon: any;
         <h2 className="text-lg font-black">{title}</h2>
       </div>
       {children}
-      <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emeraldx px-5 py-3 text-sm font-black text-ink shadow-glow transition hover:bg-white" onClick={onSave} type="button">
+      <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emeraldx px-5 py-3 text-sm font-black text-ink shadow-glow transition hover:bg-white disabled:opacity-60" disabled={disabled} onClick={onSave} type="button">
         <Save size={17} /> {button}
       </button>
     </div>

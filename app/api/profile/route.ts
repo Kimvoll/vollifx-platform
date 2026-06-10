@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBearerUser, getSupabaseAdmin } from "@/lib/supabase/server";
-import { money } from "@/lib/supabase/mappers";
+import { money, percent } from "@/lib/supabase/mappers";
 
 export async function GET(request: Request) {
   const user = await getBearerUser(request);
@@ -11,7 +11,10 @@ export async function GET(request: Request) {
   return NextResponse.json({
     profile: data,
     balance: money(data?.balance || 0),
-    availableBalance: money(data?.available_balance || 0)
+    availableBalance: money(data?.available_balance || 0),
+    roi: percent(data?.roi || 0),
+    kyc: data?.kyc_status || "Pending",
+    status: data?.status || "Active"
   });
 }
 

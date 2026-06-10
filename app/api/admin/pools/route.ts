@@ -10,6 +10,7 @@ export async function PUT(request: Request) {
     poolId: body.poolId || pools[0]?.id,
     minimum: body.minimum,
     returnSummary: body.returnSummary,
+    investors: body.investors,
     status: body.status,
     risk: body.risk,
     savedAt: new Date().toISOString()
@@ -19,6 +20,7 @@ export async function PUT(request: Request) {
     minimum_deposit: Number(String(body.minimum || "750").replace(/[^0-9.]/g, "")) || 750,
     return_label: body.returnSummary || "5x weekly",
     return_summary: body.returnSummary || "5x weekly",
+    investors: Number(String(body.investors || "0").replace(/[^0-9]/g, "")) || 0,
     status: body.status || "Open",
     risk: body.risk || "Medium",
     updated_at: new Date().toISOString()
